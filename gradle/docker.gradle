@@ -1,0 +1,72 @@
+task buildDockerImage(type: Exec, dependsOn: build) {
+  doFirst {
+    copy {
+      from jar
+      into('docker/')
+    }
+    println("Docker Tagging version -------->> ${project.baseVersion}")
+    commandLine 'docker', 'build', '-t', "${dockerTestRepo}/swat/${project.name}:${project.baseVersion}", 'docker/'
+  }
+
+  doLast {
+    delete("docker/${project.name}.jar")
+  }
+}
+
+task runDockerContainer(dependsOn: buildDockerImage) {
+  doFirst {
+    executeCommand("docker run -d \
+    -p 22922:22922 \
+    --ulimit nofile=100000:100000 \
+    --name helden-user-service \
+    -v '/private/var/log/${project.name}':'/var/log/${project.name}':Z \
+    --restart=always \
+    ${dockerTestRepo}/swat/${project.name}:${project.baseVersion}")
+  }
+}
+
+def executeCommand(String command) {
+  println 'executing ' + command
+  def commandProc = ['/bin/bash', '-c', command].execute()
+  commandProc.waitFor()
+  if (commandProc.exitValue()) {
+    throw new Exception("Error: ${commandProc.exitValue()} ${commandProc.err.text}")
+  }
+  return commandProc.text
+}
+
+def pushDockerImage(String tag, String repo) {
+  executeCommand("docker push ${repo}/swat/${project.name}:${tag}")
+}
+
+def reTagAndPushImage(String tag, String repo) {
+  executeCommand("docker tag ${repo}/swat/${project.name}:${project.baseVersion} ${repo}/swat/${project.name}:${tag}")
+  pushDockerImage(tag, repo)
+}
+
+def dockerPushToTestRepo(String tag) {
+  pushDockerImage(tag, dockerTestRepo)
+}
+
+def dockerBuildAndPushToLiveRepo(String tag) {
+  reTagAndPushImage(tag, dockerLiveRepo)
+}
+
+/**
+ * Build and push docker image to live and test repositories, tagging it with current project version
+ */
+task dockerBuildAndPushCurrentVersionToLiveRepo(dependsOn: buildDockerImage, group: 'Docker') {
+  doLast {
+    dockerBuildAndPushToLiveRepo("${project.baseVersion}")
+    dockerPushToTestRepo("${project.baseVersion}")
+  }
+}
+
+/**
+ * Build and push docker image to test repository, tagging it with current project version
+ */
+task dockerBuildAndPushCurrentVersionToTestRepo(dependsOn: buildDockerImage, group: 'Docker') {
+  doLast {
+    dockerPushToTestRepo("${project.baseVersion}")
+  }
+}

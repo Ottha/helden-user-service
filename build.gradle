@@ -1,0 +1,41 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: '1.5.1.RELEASE'
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+project.ext.baseVersion = project.version.replace("-SNAPSHOT", "")
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply from: 'gradle/dependencies.gradle'
+apply from: 'gradle/codeQuality.gradle'
+apply from: 'gradle/docker.gradle'
+
+
+jar {
+  baseName = 'helden-user-service'
+  // Set the name of the jar file to be a simple name, without the version
+  archiveName = baseName + '.' + extension
+}
+
+bootRun {
+  addResources = true
+}
+
+springBoot {
+  mainClass = 'com.ottazone.Application'
+}
+
+bootRepackage {
+  mainClass = 'com.ottazone.Application'
+  executable = true
+}

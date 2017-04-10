@@ -1,0 +1,4 @@
+spring:
+    profiles: prod
+logging:
+  config: classpath:logback-prod.xml

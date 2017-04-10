@@ -1,0 +1,19 @@
+apply plugin: 'findbugs'
+apply plugin: 'checkstyle'
+
+
+findbugs {
+  if (!project.failOnCodeQualityError.toBoolean()) {
+    ignoreFailures = true
+    println "Failing the build because of findbugs errors is disabled!"
+  }
+  excludeFilter = file('config/findbugs/excludeFilter.xml')
+}
+
+checkstyle {
+  toolVersion = '7.1.2'
+  configFile = file('config/checkstyle/checkstyle.xml')
+// TODO: enable this again once intellij is able to work with gradle 3.4 ( also upgrade gradle then )
+//  maxWarnings = 0
+//  maxErrors = 0
+}

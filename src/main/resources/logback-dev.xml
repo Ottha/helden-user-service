@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration scan="true">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>utf-8</charset>
+            <Pattern>%d %-5level [%thread] %logger{36}: %msg %mdc{TRACE_ID} %mdc{UNIQUE_ID}%n</Pattern>
+        </encoder>
+    </appender>
+    <property resource="config/application.yml" />
+
+    <logger name="org.springframework.ws.soap.security.wss4j2.Wss4jSecurityInterceptor" level="DEBUG" />
+    <logger name="org.springframework.ws.client.MessageTracing" level="TRACE" />
+    <logger name="com.tipp24.avs" level="DEBUG" />
+
+    <root level="info">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>
